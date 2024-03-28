@@ -23,4 +23,17 @@ pipeline {
             }
         }
     }
+    
+    post {
+        success {
+            emailext subject: "Pipeline Successful: ${currentBuild.fullDisplayName}",
+                     body: "The pipeline ${currentBuild.fullDisplayName} has completed successfully.",
+                     to: "mingfongmen@gmail.com"
+        }
+        failure {
+            emailext subject: "Pipeline Failed: ${currentBuild.fullDisplayName}",
+                     body: "The pipeline ${currentBuild.fullDisplayName} has failed. Please check the console output for details.",
+                     to: "mingfongmen@gmail.com"
+        }
+    }
 }
