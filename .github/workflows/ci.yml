@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [Final]
+  pull_request:
+    branches: [Final]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, pdo_sqlite, sqlite3
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: Run migrations
+      run: php artisan migrate --force
+
+    - name: Run tests
+      run: php artisan test
+
+    - name: Notify on failure
+      if: failure()
+      env:
+        MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
+        MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
+        MAILGUN_FROM_EMAIL: "mingfongmen@gmail.com"
+      run: |
+        curl -s --user "api:$MAILGUN_API_KEY" \
+        https://api.mailgun.net/v3/$MAILGUN_DOMAIN/messages \
+        -F from="$MAILGUN_FROM_EMAIL" \
+        -F to="tongsreng@itc.edu.kh" \
+        -F subject="Build failed" \
+        -F text="Build failed"
+        
+        LAST_COMMITTER=$(git log -1 --pretty=format:'%ae')
+        curl -s --user "api:$MAILGUN_API_KEY" \
+        https://api.mailgun.net/v3/$MAILGUN_DOMAIN/messages \
+        -F from="$MAILGUN_FROM_EMAIL" \
+        -F to="$LAST_COMMITTER" \
+        -F subject="Build failed" \
+        -F text="Build failed for the commit made by $LAST_COMMITTER"
