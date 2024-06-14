@@ -25,10 +25,14 @@ pipeline {
 
     post {
         success {
-            echo 'Build and test successful!'s
+            sh '''
+                bash scripts/deployment.sh SUCCESS🟢
+            '''
         }
         failure {
-            echo 'Build or test failed!'
+            sh '''
+                bash scripts/deployment.sh FAILED🔴
+            '''
         }
     }
 }
