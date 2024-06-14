@@ -17,8 +17,7 @@ pipeline {
         }
         stage('Test the app') {
             steps {
-                echo 'Testing unit tests...'
-                echo 'Testing features...'
+                echo 'Testing ...'
                 sh 'php artisan test'
             }
         }
